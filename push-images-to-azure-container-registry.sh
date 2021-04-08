@@ -2,9 +2,8 @@
 
 . .env
 . .secrets.env
+. .rbac.secrets.env
 
-echo "ACR_PASS=${ACR_PASS}"
-echo "ACR_USER=${ACR_USER}"
 echo "AZ_SUBS_ID=${AZ_SUBS_ID}"
 echo "AAD_CLIENT_ID=${AAD_CLIENT_ID}"
 echo "ADD_TENANT_ID=${ADD_TENANT_ID}"
@@ -17,13 +16,15 @@ echo "${ACR_NAME}.azurecr.io"
 
 # Login to azure container registry
 ## with az cli
+# az login 
+# This option require to do Step Optional from README
 az login --service-principal --username $AAD_CLIENT_ID --tenant $ADD_TENANT_ID --password $AAD_SECRET
 az account set --subscription ${AZ_SUBS_ID}
 az account list --output table
 az acr login --name "${ACR_NAME}"
 
-## OR with to docker providing service principal creds
-docker login "${ACR_NAME}.azurecr.io" --username ${AAD_CLIENT_ID} --password "${AAD_SECRET}"
+## OR with to docker providing service principal creds - REDUDANT
+# docker login "${ACR_NAME}.azurecr.io" --username ${AAD_CLIENT_ID} --password "${AAD_SECRET}"
 
 docker-compose build
 docker push "${ACR_NAME}.azurecr.io/azure-vote-flask-mysql:${IMAGE_VER}"
