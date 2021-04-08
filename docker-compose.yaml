@@ -1,0 +1,80 @@
+version: "3.7"
+services:
+  vote-mysql:
+    build: ./vote-app/vote-app-mysql
+    image: vote-mysql:v1
+    container_name: vote-mysql
+    environment: # https://hub.docker.com/_/mysql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
+      MYSQL_USER: ${MYSQL_DATABASE_USER}
+      MYSQL_DATABASE: ${MYSQL_DATABASE_DB}
+    ports:
+      - "${MYSQL_DATABASE_PORT}"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p",
+          "$${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 5s
+      timeout: 180s
+      retries: 10
+
+  vote-flask-mysql:
+    build: ./vote-app/vote-app-flask-mysql
+    depends_on:
+      - vote-mysql
+    image: vote-flask-mysql:${IMAGE_VER}
+    container_name: vote-flask-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
+      MYSQL_DATABASE_USER: ${MYSQL_DATABASE_USER}
+      MYSQL_DATABASE_HOST: ${MYSQL_DATABASE_HOST}
+      MYSQL_DATABASE_PORT: ${MYSQL_DATABASE_PORT}
+      MYSQL_DATABASE_DB: ${MYSQL_DATABASE_DB}
+    ports:
+      - "8090:80"
+    volumes:
+      - "./vote-app/vote-app-flask-mysql/app:/usr/src/app"
+
+  azure-vote-flask-mysql:
+    build: ./vote-app/vote-app-flask-mysql
+    image: ${ACR_NAME}.azurecr.io/azure-vote-flask-mysql:${IMAGE_VER}
+    container_name: azure-vote-flask-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${AZ_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE_PASSWORD: ${AZ_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE_USER: ${AZ_MYSQL_ROOT_USERNAME}
+      MYSQL_DATABASE_HOST: ${AZ_MYSQL_DATABASE_HOST}
+      MYSQL_DATABASE_PORT: ${AZ_MYSQL_DATABASE_PORT}
+      MYSQL_DATABASE_DB: ${AZ_MYSQL_DATABASE_DB}
+    ports:
+      - "8080:80"
+    volumes:
+      - "./vote-app/vote-app-flask-mysql/app:/usr/src/app"
+
+  # azure-vote-flask-cosmosdb:
+  #   build: ./vote-app/vote-app-flask-cosmosdb
+  #   image: ${ACR_NAME}.azurecr.io/azure-vote-flask-cosmosdb:v1
+  #   container_name: azure-vote-flask-cosmosdb
+  #   tty: true
+  #   environment:
+  #     COSMOS_DB_ENDPOINT: ${COSMOS_DB_ENDPOINT}
+  #     COSMOS_DB_MASTERKEY: ${COSMOS_DB_MASTERKEY}
+  #     COSMOS_DB_DATABASE: ${COSMOS_DB_DATABASE}
+  #     COSMOS_DB_COLLECTION: ${COSMOS_DB_COLLECTION}
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - "./vote-app/vote-app-flask-cosmosdb/app:/usr/src/app"
