@@ -2,7 +2,6 @@
 
 . .env
 . .secrets.env
-. .rbac.secrets.env
 
 echo "AZ_SUBS_ID=${AZ_SUBS_ID}"
 echo "AAD_CLIENT_ID=${AAD_CLIENT_ID}"

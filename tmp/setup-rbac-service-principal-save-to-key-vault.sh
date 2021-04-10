@@ -1,5 +1,13 @@
 #!/usr/bin/bash -euo pipefail
 . .env
+. .secrets.env
+
+
+# Login to azure container registry
+az login 
+az account set --subscription ${AZ_SUBS_ID}
+az account list --output table
+
 
 AAD_ACR_PUSH_PRINCIPAL_NAME="${ACR_NAME}-push"
 AAD_ACR_PUSH_CLIENT_ID_NAME="${ACR_NAME}-push-usr"
